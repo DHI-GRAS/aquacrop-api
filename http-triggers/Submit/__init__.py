@@ -37,7 +37,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     await_queue_name = os.getenv('AZURE_AWAIT_QUEUE_NAME')
     guid = uuid.uuid4()
     job_dict['guid'] = guid
-    schema = submit_schema.SubmitJobSchema()
+    schema = submit_schema.AwaitSchema()
     try:
         message = schema.dumps(job_dict)
     except ValidationError:
