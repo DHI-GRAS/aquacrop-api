@@ -3,7 +3,8 @@
 API:
 1. Submit: https://aquacropapiapp.azurewebsites.net/api/submit
 2. Query: https://aquacropapiapp.azurewebsites.net/api/query
-3. Move-mock: https://aquacropapiapp.azurewebsites.net/api/move-mock
+3. GetJob: https://aquacropapiapp.azurewebsites.net/api/getjob
+4. Move-mock: https://aquacropapiapp.azurewebsites.net/api/move-mock
 
 
 ## Example messages
@@ -18,7 +19,34 @@ API:
   "crop": "Maize",
   "planting_date": "2018-01-01",
   "irrigated": false,
-  "fraction": 0.0
+  "fraction": 0.0,
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [
+          33.652496337890625,
+          -13.062088034413119
+        ],
+        [
+          34.028778076171875,
+          -13.062088034413119
+        ],
+        [
+          34.028778076171875,
+          -12.746176829427826
+        ],
+        [
+          33.652496337890625,
+          -12.746176829427826
+        ],
+        [
+          33.652496337890625,
+          -13.062088034413119
+        ]
+      ]
+    ]
+  }
 }
 ```
 
@@ -41,6 +69,14 @@ API:
 
 where `status` can be can be any of `["completed", "awaiting", "failed"]`.
 
+#### getjob message (`POST`)
+
+``json
+{
+  "num_messages": 1
+}
+```
+
 
 ### Behind the scenes
 
@@ -53,8 +89,36 @@ where `status` can be can be any of `["completed", "awaiting", "failed"]`.
   "crop": "Maize",
   "planting_date": "2018-01-01",
   "irrigated": false,
-  "fraction": 0.0
+  "fraction": 0.0,
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [
+          33.652496337890625,
+          -13.062088034413119
+        ],
+        [
+          34.028778076171875,
+          -13.062088034413119
+        ],
+        [
+          34.028778076171875,
+          -12.746176829427826
+        ],
+        [
+          33.652496337890625,
+          -12.746176829427826
+        ],
+        [
+          33.652496337890625,
+          -13.062088034413119
+        ]
+      ]
+    ]
+  }
 }
+
 ```
 
 ### done queue message
