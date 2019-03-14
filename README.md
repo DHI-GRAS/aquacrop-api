@@ -1,9 +1,17 @@
 # Aquacrop-API
 
-API:
+## API
+
 1. Submit: https://aquacropapiapp.azurewebsites.net/api/submit
 2. Query: https://aquacropapiapp.azurewebsites.net/api/query
 3. Move-mock: https://aquacropapiapp.azurewebsites.net/api/move-mock
+
+## Deployment
+
+1. Edit `config.ini` to your needs - in particular, enter the storage access key.
+2. Make sure you are in a Python 3 environment (e.g. `python3 -m venv &ENVDIR && source $ENVDIR/bin/activate`)
+3. If the app is already deployed, use `make fetch-app-settings` to store the existing settings locally.
+4. Then you can (re-)deploy with make azure-deploy.
 
 
 ## Example messages
