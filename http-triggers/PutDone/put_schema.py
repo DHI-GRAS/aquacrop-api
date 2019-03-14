@@ -16,7 +16,7 @@ class SubmitMessageSchema(Schema):
     planting_date = fields.Date(format="%Y-%m-%d")
     irrigated = fields.Boolean(required=True)
     fraction = fields.Float(required=True)
-    geometry = fields.Nested(GeometrySchema)
+    geometry = fields.Nested(GeometrySchema, required=True)
 
 
 class AwaitSchema(Schema):
@@ -26,7 +26,7 @@ class AwaitSchema(Schema):
     planting_date = fields.Date(format="%Y-%m-%d")
     irrigated = fields.Boolean(required=True)
     fraction = fields.Float(required=True)
-    geometry = fields.Nested(GeometrySchema)
+    geometry = fields.Nested(GeometrySchema, required=True)
 
 
 class DoneSchema(Schema):
