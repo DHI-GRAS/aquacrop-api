@@ -79,7 +79,7 @@ where `status` can be can be any of `["completed", "awaiting", "failed"]`.
 
 #### getjob message (`POST`)
 
-``json
+```json
 {
   "num_messages": 1
 }
