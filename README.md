@@ -23,7 +23,7 @@
 
 ```json
 {
-  "area_name": "Volta",
+  "area_name": "Malawi",
   "crop": "Maize",
   "planting_date": "2018-01-01",
   "irrigated": false,
@@ -93,7 +93,7 @@ where `status` can be can be any of `["completed", "awaiting", "failed"]`.
 ```json
 {
   "guid": "c1edf256-c4b2-4373-8ac8-3f3be5a2a82e",
-  "area_name": "Volta",
+  "area_name": "Malawi",
   "crop": "Maize",
   "planting_date": "2018-01-01",
   "irrigated": false,
