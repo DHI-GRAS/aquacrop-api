@@ -5,12 +5,18 @@ AREA_TYPES = []
 QUERY_RESPONSE_STATUS = ['awaiting', 'completed', 'failed']
 
 
+class GeometrySchema(Schema):
+    coordinates = fields.List(fields.List(fields.List(fields.Float)))
+    type = fields.String(validate.OneOf(['Polygon']))
+
+
 class SubmitMessageSchema(Schema):
     area_name = fields.String(required=True)
     crop = fields.String(required=True)
     planting_date = fields.Date(format="%Y-%m-%d")
     irrigated = fields.Boolean(required=True)
     fraction = fields.Float(required=True)
+    geometry = fields.Nested(GeometrySchema)
 
 
 class AwaitSchema(Schema):
@@ -20,6 +26,7 @@ class AwaitSchema(Schema):
     planting_date = fields.Date(format="%Y-%m-%d")
     irrigated = fields.Boolean(required=True)
     fraction = fields.Float(required=True)
+    geometry = fields.Nested(GeometrySchema)
 
 
 class DoneSchema(Schema):

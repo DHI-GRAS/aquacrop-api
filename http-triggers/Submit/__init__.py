@@ -1,12 +1,13 @@
 import logging
 import os
-import azure.functions as func
 import base64
 import uuid
-from . import submit_schema
 
 from marshmallow.exceptions import ValidationError
 from azure.storage import CloudStorageAccount
+import azure.functions as func
+
+from . import submit_schema
 
 
 def encode_message(msg):

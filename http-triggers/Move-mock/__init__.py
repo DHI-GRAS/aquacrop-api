@@ -1,13 +1,14 @@
-import logging
 import os
-import azure.functions as func
-from . import move_schema
+import logging
 import binascii
 import base64
 import uuid
 import random
 
+import azure.functions as func
 from azure.storage import CloudStorageAccount
+
+from . import move_schema
 
 
 def encode_message(msg):
@@ -30,7 +31,7 @@ def decode_message(queue_message):
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP Move trigger received a request')
 
-    logging.debug('Creating blob service')
+    logging.debug('Creating queue service')
     account = CloudStorageAccount(
         account_name=os.getenv('AZURE_STORAGE_ACCOUNT'),
         account_key=os.getenv('AZURE_STORAGE_ACCESS_KEY')

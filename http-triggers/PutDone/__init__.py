@@ -1,11 +1,12 @@
-import logging
 import os
-import azure.functions as func
+import logging
 import base64
-from . import put_schema
 
 from marshmallow.exceptions import ValidationError
 from azure.storage import CloudStorageAccount
+import azure.functions as func
+
+from . import put_schema
 
 
 def encode_message(msg):
@@ -41,4 +42,4 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         content=encode_message(message),
         time_to_live=604800
     )
-    return func.HttpResponse(f'Message was successfully inserted into Done queue')
+    return func.HttpResponse('Message was successfully inserted into Done queue')
