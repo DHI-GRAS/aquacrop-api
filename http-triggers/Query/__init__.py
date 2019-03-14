@@ -1,12 +1,13 @@
-import logging
 import os
-import azure.functions as func
-from . import query_schema
+import logging
 import binascii
 import base64
 import uuid
 
 from azure.storage import CloudStorageAccount
+import azure.functions as func
+
+from . import query_schema
 
 
 def decode_message(queue_message):

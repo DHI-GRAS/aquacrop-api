@@ -1,12 +1,13 @@
-import logging
 import os
-import azure.functions as func
+import logging
 import base64
 import binascii
 
-from . import getjob_schema
-from azure.storage import CloudStorageAccount
 from marshmallow.exceptions import ValidationError
+from azure.storage import CloudStorageAccount
+import azure.functions as func
+
+from . import getjob_schema
 
 
 def decode_message(queue_message):
