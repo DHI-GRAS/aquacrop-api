@@ -83,8 +83,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             time_to_live=604800
         )
         return func.HttpResponse(f'Ok',
-                                 headers=headers_dict,
-                                 status_code=400
+                                 headers=headers_dict
                                  )
     else:
         return func.HttpResponse(f'Not found',
