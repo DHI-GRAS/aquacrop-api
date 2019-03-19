@@ -27,13 +27,23 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         account_name=os.getenv('AZURE_STORAGE_ACCOUNT'),
         account_key=os.getenv('AZURE_STORAGE_ACCESS_KEY')
     )
+
+    headers_dict = {
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "Post"
+    }
+
     queue_service = account.create_queue_service()
     schema = submit_schema.SubmitMessageSchema()
     try:
         job_dict = schema.loads(req.get_body())
     except ValidationError:
         error = f'Failed to validate the submit message'
-        return func.HttpResponse(error, status_code=400)
+        return func.HttpResponse(error,
+                                 headers=headers_dict,
+                                 status_code=400
+                                 )
 
     await_queue_name = os.getenv('AZURE_AWAIT_QUEUE_NAME')
     guid = uuid.uuid4()
@@ -43,7 +53,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         message = schema.dumps(job_dict)
     except ValidationError:
         error = f'Failed to submit job'
-        return func.HttpResponse(error, status_code=400)
+        return func.HttpResponse(error,
+                                 headers=headers_dict,
+                                 status_code=400
+                                 )
 
     queue_service.put_message(
         queue_name=await_queue_name,
@@ -54,4 +67,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     response_dict['guid'] = guid
     schema = submit_schema.SubmitResponseSchema()
     response_message = schema.dumps(response_dict)
-    return func.HttpResponse(response_message, mimetype='application/json')
+    return func.HttpResponse(response_message,
+                             headers=headers_dict,
+                             mimetype='application/json'
+                             )

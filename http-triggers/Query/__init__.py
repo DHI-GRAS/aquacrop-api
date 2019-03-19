@@ -28,10 +28,18 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     )
     queue_service = account.create_queue_service()
 
+    headers_dict = {
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "Get"
+    }
     guid = req.params.get('guid')
     if not guid:
         error = f'Check Url paramaters. No guid variable was found'
-        return func.HttpResponse(error, status_code=400)
+        return func.HttpResponse(error,
+                                 headers=headers_dict,
+                                 status_code=400
+                                 )
     guid = uuid.UUID(guid)
     logging.info("Creating Dicts")
     await_queue_name = os.getenv('AZURE_AWAIT_QUEUE_NAME')
@@ -52,6 +60,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             query_response_dict['error'] = None
             response_message = query_response_schema.dumps(query_response_dict)
             return func.HttpResponse(response_message,
+                                     headers=headers_dict,
                                      mimetype='application/json'
                                      )
 
@@ -72,6 +81,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             query_response_dict['error'] = message_error
             response_message = query_response_schema.dumps(query_response_dict)
             return func.HttpResponse(response_message,
+                                     headers=headers_dict,
                                      mimetype='application/json'
                                      )
 
