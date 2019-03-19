@@ -26,13 +26,22 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         account_name=os.getenv('AZURE_STORAGE_ACCOUNT'),
         account_key=os.getenv('AZURE_STORAGE_ACCESS_KEY')
     )
+
+    headers_dict = {
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "Post"
+    }
     queue_service = account.create_queue_service()
     schema = put_schema.DoneSchema()
     try:
         done_dict = schema.loads(req.get_body())
     except ValidationError:
         error = f'Failed to validate the done message'
-        return func.HttpResponse(error, status_code=400)
+        return func.HttpResponse(error,
+                                 headers=headers_dict,
+                                 status_code=400
+                                 )
 
     done_queue_name = os.getenv('AZURE_DONE_QUEUE_NAME')
 
@@ -42,4 +51,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         content=encode_message(message),
         time_to_live=604800
     )
-    return func.HttpResponse('Message was successfully inserted into Done queue')
+    return func.HttpResponse('Message was successfully inserted into Done queue',
+                             headers=headers_dict,
+                             )

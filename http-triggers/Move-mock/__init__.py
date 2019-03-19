@@ -36,12 +36,20 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         account_name=os.getenv('AZURE_STORAGE_ACCOUNT'),
         account_key=os.getenv('AZURE_STORAGE_ACCESS_KEY')
     )
+    headers_dict = {
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "Get"
+    }
     queue_service = account.create_queue_service()
 
     guid = req.params.get('guid')
     if not guid:
         error = f'Check Url paramaters. No guid variable was found'
-        return func.HttpResponse(error, status_code=400)
+        return func.HttpResponse(error,
+                                 headers=headers_dict,
+                                 status_code=400
+                                 )
     guid = uuid.UUID(guid)
     logging.info("Creating Dicts")
     await_queue_name = os.getenv('AZURE_AWAIT_QUEUE_NAME')
@@ -74,6 +82,11 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             content=encode_message(message),
             time_to_live=604800
         )
-        return func.HttpResponse(f'Ok')
+        return func.HttpResponse(f'Ok',
+                                 headers=headers_dict
+                                 )
     else:
-        return func.HttpResponse(f'Not found', status_code=400)
+        return func.HttpResponse(f'Not found',
+                                 headers=headers_dict,
+                                 status_code=400
+                                 )
