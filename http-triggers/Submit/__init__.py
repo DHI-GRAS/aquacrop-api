@@ -2,10 +2,12 @@ import logging
 import os
 import base64
 import uuid
+import json
 
 from marshmallow.exceptions import ValidationError
-from azure.storage import CloudStorageAccount
 import azure.functions as func
+from azure.cosmosdb.table.tableservice import TableService
+from azure.cosmosdb.table.models import Entity
 
 from . import submit_schema
 
@@ -23,7 +25,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP Submit trigger received a request')
 
     logging.debug('Creating blob service')
-    account = CloudStorageAccount(
+    table_service = TableService(
         account_name=os.getenv('AZURE_STORAGE_ACCOUNT'),
         account_key=os.getenv('AZURE_STORAGE_ACCESS_KEY')
     )
@@ -34,7 +36,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "Access-Control-Allow-Methods": "Post"
     }
 
-    queue_service = account.create_queue_service()
     schema = submit_schema.SubmitMessageSchema()
     try:
         job_dict = schema.loads(req.get_body())
@@ -45,24 +46,36 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                                  status_code=400
                                  )
 
-    await_queue_name = os.getenv('AZURE_AWAIT_QUEUE_NAME')
+    table_name = os.getenv('AZURE_TABLE_NAME')
+    table_service.create_table(table_name)
     guid = uuid.uuid4()
-    job_dict['guid'] = guid
-    schema = submit_schema.AwaitSchema()
     try:
-        message = schema.dumps(job_dict)
+        job_dict = schema.dump(job_dict)
     except ValidationError:
         error = f'Failed to submit job'
         return func.HttpResponse(error,
                                  headers=headers_dict,
                                  status_code=400
                                  )
+    entity = Entity()
+    entity.PartitionKey = 'await'
+    entity.RowKey = str(guid)
+    entity.Error = ""
+    entity.area_name = job_dict['area_name']
+    entity.crop = job_dict['crop']
+    entity.planting_date = job_dict['planting_date']
+    entity.irrigated = job_dict['irrigated']
+    entity.fraction = job_dict['fraction']
+    entity.geometry = json.dumps(job_dict['geometry'])
+    try:
+        table_service.insert_entity(table_name, entity)
+    except TypeError:
+        error = f'Failed to insert to table'
+        return func.HttpResponse(error,
+                                 headers=headers_dict,
+                                 status_code=400
+                                 )
 
-    queue_service.put_message(
-        queue_name=await_queue_name,
-        content=encode_message(message),
-        time_to_live=604800
-    )
     response_dict = {}
     response_dict['guid'] = guid
     schema = submit_schema.SubmitResponseSchema()

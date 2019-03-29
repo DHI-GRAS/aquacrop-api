@@ -6,7 +6,7 @@ azure-localhost: fetch-app-settings
 	cd http-triggers; func host start
 
 azure-deploy: start-functionapp
-	cd http-triggers; func azure functionapp publish $(FUNCTION_APP)
+	cd http-triggers; func azure functionapp publish $(FUNCTION_APP) --build-native-deps 
 
 install-azure-extensions:
 	cd http-triggers; func extensions install; cd ..

@@ -3,9 +3,10 @@ import logging
 import base64
 
 from marshmallow.exceptions import ValidationError
-from azure.storage import CloudStorageAccount
 import azure.functions as func
 
+from azure.common import AzureMissingResourceHttpError
+from azure.cosmosdb.table.tableservice import TableService
 from . import put_schema
 
 
@@ -22,17 +23,12 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP Submit trigger received a request')
 
     logging.debug('Creating blob service')
-    account = CloudStorageAccount(
-        account_name=os.getenv('AZURE_STORAGE_ACCOUNT'),
-        account_key=os.getenv('AZURE_STORAGE_ACCESS_KEY')
-    )
 
     headers_dict = {
             "Access-Control-Allow-Credentials": "true",
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "Post"
     }
-    queue_service = account.create_queue_service()
     schema = put_schema.DoneSchema()
     try:
         done_dict = schema.loads(req.get_body())
@@ -43,14 +39,27 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                                  status_code=400
                                  )
 
-    done_queue_name = os.getenv('AZURE_DONE_QUEUE_NAME')
-
-    message = schema.dumps(done_dict)
-    queue_service.put_message(
-        queue_name=done_queue_name,
-        content=encode_message(message),
-        time_to_live=604800
+    table_name = os.getenv('AZURE_TABLE_NAME')
+    table_service = TableService(
+        account_name=os.getenv('AZURE_STORAGE_ACCOUNT'),
+        account_key=os.getenv('AZURE_STORAGE_ACCESS_KEY')
     )
+    try:
+        entity = table_service.get_entity(table_name, 'processing', done_dict['guid'])
+    except AzureMissingResourceHttpError:
+        error = f'Failed to put done message'
+        return func.HttpResponse(error,
+                                 headers=headers_dict,
+                                 status_code=400
+                                 )
+    if not done_dict['error']:
+        entity.Error = ""
+    else:
+        entity.Error = done_dict['error']
+    table_service.delete_entity(table_name, entity.PartitionKey, entity.RowKey)
+    entity.PartitionKey = 'done'
+    table_service.insert_entity(table_name, entity)
+
     return func.HttpResponse('Message was successfully inserted into Done queue',
-                             headers=headers_dict,
+                             headers=headers_dict
                              )

@@ -2,10 +2,13 @@ import os
 import logging
 import base64
 import binascii
+import json
 
 from marshmallow.exceptions import ValidationError
 from azure.storage import CloudStorageAccount
 import azure.functions as func
+from azure.cosmosdb.table.tableservice import TableService
+from azure.cosmosdb.table.models import Entity
 
 from . import getjob_schema
 
@@ -22,11 +25,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP Submit trigger received a request')
 
     logging.debug('Creating blob service')
-    account = CloudStorageAccount(
+    table_service = TableService(
         account_name=os.getenv('AZURE_STORAGE_ACCOUNT'),
         account_key=os.getenv('AZURE_STORAGE_ACCESS_KEY')
     )
-    queue_service = account.create_queue_service()
 
     headers_dict = {
             "Access-Control-Allow-Credentials": "true",
@@ -46,23 +48,31 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                                  headers=headers_dict,
                                  status_code=400
                                  )
-    await_queue_name = os.getenv('AZURE_AWAIT_QUEUE_NAME')
-
-    message_list = queue_service.get_messages(
-        queue_name=await_queue_name
-    )
-    if len(message_list) == 0:
-        return func.HttpResponse(f'No message found',
+    table_name = os.getenv('AZURE_TABLE_NAME')
+    entity = None
+    entities = table_service.query_entities(table_name, filter="PartitionKey eq 'await'")
+    for entity in entities:
+        break
+    if not entity:
+        return func.HttpResponse(f'No job found',
                                  headers=headers_dict,
                                  status_code=400
                                  )
+    message = {}
+    message['crop'] = entity.crop
+    message['geometry'] = json.loads(entity.geometry)
+    message['irrigated'] = entity.irrigated
+    message['guid'] = entity.RowKey
+    message['area_name'] = entity.area_name
+    message['planting_date'] = entity.planting_date
+    message['fraction'] = entity.fraction
 
-    message = message_list[0]
-    queue_service.delete_message(await_queue_name,
-                                 message.id,
-                                 message.pop_receipt
-                                 )
-    return func.HttpResponse(decode_message(message),
+    table_service.delete_entity(table_name, entity.PartitionKey, entity.RowKey)
+    entity.PartitionKey = 'processing'
+
+    table_service.insert_entity(table_name, entity)
+
+    return func.HttpResponse(json.dumps(message),
                              headers=headers_dict,
                              mimetype='application/json'
                              )
