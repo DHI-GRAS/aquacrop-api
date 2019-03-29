@@ -76,7 +76,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                                  status_code=400
                                  )
 
-
     response_dict = {}
     response_dict['guid'] = guid
     schema = submit_schema.SubmitResponseSchema()

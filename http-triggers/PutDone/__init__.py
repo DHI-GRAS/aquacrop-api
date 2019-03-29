@@ -52,7 +52,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                                  headers=headers_dict,
                                  status_code=400
                                  )
-    entity.Error = done_dict['error']
+    if not done_dict['error']:
+        entity.Error = ""
+    else:
+        entity.Error = done_dict['error']
     table_service.delete_entity(table_name, entity.PartitionKey, entity.RowKey)
     entity.PartitionKey = 'done'
     table_service.insert_entity(table_name, entity)
