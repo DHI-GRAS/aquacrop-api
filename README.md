@@ -75,7 +75,7 @@
 }
 ```
 
-where `status` can be can be any of `["completed", "awaiting", "failed"]`.
+where `status` can be can be any of `["awaiting", "processing", "completed", "failed"]`.
 
 #### getjob message (`POST`)
 
